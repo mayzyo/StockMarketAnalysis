@@ -1,4 +1,6 @@
 import numpy as np
+import re
+import pandas as pd
 from datetime import datetime, timedelta
 
 def scope_dataframe(df, time_range):
@@ -30,3 +32,24 @@ def annotate_texts(ax, yPos, label=[], indexes=[]):
             xytext=(-20, 40),
             bbox=dict(boxstyle='round,pad=0.2', fc='white', alpha=0.3),
             textcoords='offset points')
+
+def correct_ticker(input):
+    exDict = {
+        'SH': 'SS',
+        'SZ': 'SZ'
+    }
+    if type(input) == str:
+        try:
+            digits = re.findall('[0-9]+', input)
+            if digits:
+                exchange = input.replace(digits[0], '')
+                ticker = f'{digits[0]}.{exDict[exchange]}'
+                return ticker
+        except:
+            print(input)
+    return None
+
+def load_txt(path):
+    df = pd.read_csv(path, sep='\t+', engine='python')
+    df['代码'] = df['代码'].apply(lambda row : correct_ticker(row))
+    return df
